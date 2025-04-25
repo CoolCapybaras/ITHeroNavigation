@@ -33,7 +33,7 @@ public class PlaceController: ControllerBase
     [Authorize]
     public async Task<IActionResult> GetPlaceById(Guid placeId)
     {
-        var result = await _placeService.GetPlacesByIdAsync(placeId);
+        var result = await _placeService.GetPlaceByIdAsync(placeId);
         if (result.IsSuccess)
             return Ok(new { result = result.Value });
         return BadRequest(new { error = result.Error });

@@ -6,7 +6,7 @@ public interface IPlaceRepository
 {
     public Task AddPlaceAsync(Place place);
 
-    public Task<Place?> GetPlaceById(Guid placeId);
+    public Task<Place?> GetPlaceByIdAsync(Guid placeId);
 
     public Task<List<Place>> GetPlacesByLocationAsync(double minLat, double maxLat, double minLon, double maxLon);
 

@@ -36,9 +36,9 @@ public class PlaceService : IPlaceService
         return Result<Place>.Success(newPlace);
     }
 
-    public async Task<Result<Place>> GetPlacesByIdAsync(Guid placeId)
+    public async Task<Result<Place>> GetPlaceByIdAsync(Guid placeId)
     {
-        var place = await _placeRepository.GetPlaceById(placeId);
+        var place = await _placeRepository.GetPlaceByIdAsync(placeId);
 
         if (place == null)
         {

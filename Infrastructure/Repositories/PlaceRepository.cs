@@ -20,7 +20,7 @@ public class PlaceRepository: IPlaceRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<Place?> GetPlaceById(Guid placeId)
+    public async Task<Place?> GetPlaceByIdAsync(Guid placeId)
     {
         return await _context.Places.FirstOrDefaultAsync(u => u.Id == placeId);
     }
