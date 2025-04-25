@@ -1,10 +1,13 @@
 ﻿using Domain.DTO;
+using Domain.Errors;
 using Domain.Models;
 
 namespace Domain.Interfaces;
 
 public interface IUserService
 {
+    public Task<Result<User>> GetInfoAsync(string userId);
+
     public Task<Result<List<Place>>> GetPlacesAsync(string userId, int offset, int count);
 
     public Task<Result<List<Favorite>>> GetFavoritesAsync(string userId, int offset, int count);

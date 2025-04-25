@@ -18,9 +18,9 @@ namespace ITHeroNavigation.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> AddCategory([FromBody] CategoryRequest placeRequest)
+        public async Task<IActionResult> AddCategory([FromBody] CategoryRequest categoryRequest)
         {
-            var result = await _categoryService.AddCategoryAsync(placeRequest);
+            var result = await _categoryService.AddCategoryAsync(categoryRequest);
             if (result.IsSuccess)
                 return Ok(new { result = result.Value });
             return BadRequest(new { error = result.Error });

@@ -1,4 +1,5 @@
 ﻿using Domain.DTO;
+using Domain.Errors;
 using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.Extensions.Configuration;

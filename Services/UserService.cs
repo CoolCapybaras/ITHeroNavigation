@@ -1,4 +1,5 @@
 ﻿using Domain.DTO;
+using Domain.Errors;
 using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,20 @@ public class UserService : IUserService
     {
         _userRepository = placeRepository;
         _configuration = configuration;
+    }
+
+    public async Task<Result<User>> GetInfoAsync(string userId)
+    {
+        var parseUserId = Guid.Parse(userId);
+
+        var res = await _userRepository.GetInfoAsync(parseUserId);
+
+        if (res == null)
+        {
+            return Result<User>.Failure("Такого пользователя не существует");
+        }
+
+        return Result<User>.Success(res);
     }
 
     public async Task<Result<List<Place>>> GetPlacesAsync(string userId, int offset, int count)

@@ -1,4 +1,5 @@
 ﻿using Domain.DTO;
+using Domain.Errors;
 using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.Extensions.Configuration;
@@ -17,11 +18,11 @@ public class CategoryService : ICategoryService
     }
 
 
-    public async Task<Result<Category>> AddCategoryAsync(CategoryRequest category)
+    public async Task<Result<Category>> AddCategoryAsync(CategoryRequest categoryRequest)
     {
         var newCategory = new Category
         {
-            Name = category.Name
+            Name = categoryRequest.Name
         };
 
 

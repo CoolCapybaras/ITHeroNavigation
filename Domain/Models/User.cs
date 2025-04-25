@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace Domain.Models;
 
@@ -16,8 +16,7 @@ public class User
     public string Email { get; set; }
 
     [Required]
+    [JsonIgnore]
     public string HashPassword { get; set; }
-
-    public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
 
 }

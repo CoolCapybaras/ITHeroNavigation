@@ -18,6 +18,17 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetInfoAsync()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await _userService.GetInfoAsync(userId);
+        if (result.IsSuccess)
+            return Ok(new { result = result.Value });
+        return BadRequest(new { error = result.Error });
+    }
+
     [HttpGet("me/places")]
     [Authorize]
     public async Task<IActionResult> GetPlacesAsync(int offset, int count)

@@ -14,6 +14,11 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
+    public async Task<User?> GetInfoAsync(Guid userId)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+    }
+
     public async Task<List<Place>> GetPlacesAsync(Guid userId, int offset, int count)
     {
         return await _context.Places.Where(u => u.AuthorId == userId).Skip(offset).Take(count).ToListAsync();

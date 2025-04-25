@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces;
+﻿using Domain.Errors;
+using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;

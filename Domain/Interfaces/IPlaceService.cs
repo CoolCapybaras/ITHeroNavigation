@@ -1,4 +1,5 @@
 ﻿using Domain.DTO;
+using Domain.Errors;
 using Domain.Models;
 
 namespace Domain.Interfaces;
