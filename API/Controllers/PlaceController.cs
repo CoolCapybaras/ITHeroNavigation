@@ -77,6 +77,7 @@ public class PlaceController: ControllerBase
 
     [HttpPost("{placeId}/photos")]
     [RequestSizeLimit(10_000_000)] // Ограничение размера, например 10MB
+    [Authorize]
     public async Task<IActionResult> UploadPhotoAsync(Guid placeId, IFormFile file)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
