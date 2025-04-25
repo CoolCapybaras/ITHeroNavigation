@@ -146,7 +146,8 @@ public class PlaceService : IPlaceService
         var newReviewLike = new ReviewLike
         {
             UserId = parseUserId,
-            ReviewId = reviewId
+            ReviewId = reviewId,
+            PlaceId = review.PlaceId
         };
         await _placeRepository.AddReviewLikeAsync(newReviewLike);
         await _placeRepository.UpdateLikesAsync(review);

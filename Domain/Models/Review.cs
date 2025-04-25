@@ -29,5 +29,8 @@ public class Review
 
     public int Likes { get; set; }
 
+    [NotMapped]
+    public bool IsLiked { get; set; }
+
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 }

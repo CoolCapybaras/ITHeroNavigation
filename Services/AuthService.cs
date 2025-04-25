@@ -43,7 +43,7 @@ public class AuthService : IAuthService
     {
         var user = await _userRepository.GetByEmailAsync(email);
         if (user == null || user.HashPassword != HashPassword(password))
-            return Result<string>.Failure("Incorrect username or password");
+            return Result<string>.Failure("Invalid email or password");
 
         return Result<string>.Success(GenerateJwtToken(user));
     }

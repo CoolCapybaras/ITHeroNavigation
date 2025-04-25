@@ -100,10 +100,19 @@ public class PlaceRepository: IPlaceRepository
 
     public async Task<List<Review>> GetReviewsAsync(Guid placeId, int offset, int count)
     {
-        return await _context.Reviews.Where(u => u.PlaceId == placeId)
+        var reviews = await _context.Reviews.Where(u => u.PlaceId == placeId)
             .Skip(offset)
             .Take(count)
             .ToListAsync();
+
+        var likedReviewIds = await _context.ReviewLikes.Where(u => u.PlaceId == placeId).Select(u => u.ReviewId).ToListAsync();
+
+        foreach (var review in reviews)
+        {
+            review.IsLiked = likedReviewIds.Contains(review.Id);
+        }
+
+        return reviews;
     }
 
     public async Task AddPhotoAsync(Photo photo)
