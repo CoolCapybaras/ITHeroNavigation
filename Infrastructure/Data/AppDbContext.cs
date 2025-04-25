@@ -10,7 +10,9 @@ public class AppDbContext: DbContext
     public DbSet<Place> Places { get; set; }
     
     public DbSet<Review> Reviews { get; set; }
-    
+
+    public DbSet<ReviewLike> ReviewLikes { get; set; }
+
     public DbSet<Category> Categories { get; set; }
     
     public DbSet<Favorite> Favorites { get; set; }
@@ -26,5 +28,8 @@ public class AppDbContext: DbContext
     {
         modelBuilder.Entity<Favorite>()
             .HasKey(f => new { f.UserId, f.PlaceId });
+
+        modelBuilder.Entity<ReviewLike>()
+        .HasKey(rl => new { rl.UserId, rl.ReviewId });
     }
 }

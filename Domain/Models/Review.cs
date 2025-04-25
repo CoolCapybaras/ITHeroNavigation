@@ -26,6 +26,8 @@ public class Review
     [ForeignKey("PlaceId")]
     [JsonIgnore]
     public Place Place { get; set; }
-    
+
+    public int Likes { get; set; }
+
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 }

@@ -12,7 +12,7 @@ public interface IUserRepository
 
     public Task AddFavoriteAsync(Favorite favorite);
 
-    public Task<Favorite?> GetFavoriteByIdAsync(Guid placeId);
+    public Task<Favorite?> GetFavoriteByIdAsync(Guid userId, Guid placeId);
 
     public Task DeleteFavoriteAsync(Favorite favorite);
 }

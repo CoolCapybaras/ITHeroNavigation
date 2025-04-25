@@ -39,6 +39,27 @@ public class PlaceService : IPlaceService
         return Result<Place>.Success(newPlace);
     }
 
+    public async Task<Result<string>> DeletePlaceAsync(Guid placeId, string userId)
+    {
+        var parseUserId = Guid.Parse(userId);
+
+        var place = await _placeRepository.GetPlaceByIdAsync(placeId);
+
+        if (place == null)
+        {
+            return Result<string>.Failure("Такого заведения не существует");
+        }
+
+        if (place.AuthorId != parseUserId)
+        {
+            return Result<string>.Failure("Вы не создатель этого заведения");
+        }
+
+
+        await _placeRepository.DeletePlaceAsync(place);
+        return Result<string>.Success("Ok");
+    }
+
     public async Task<Result<Place>> GetPlaceByIdAsync(Guid placeId)
     {
         var place = await _placeRepository.GetPlaceByIdAsync(placeId);
@@ -103,7 +124,56 @@ public class PlaceService : IPlaceService
 
     public async Task<Result<List<Review>>> GetReviewsAsync(Guid placeId, int offset, int count)
     {
-        return Result<List<Review>>.Success(await _placeRepository.GetReviewAsync(placeId, offset, count));
+        return Result<List<Review>>.Success(await _placeRepository.GetReviewsAsync(placeId, offset, count));
+    }
+
+    public async Task<Result<string>> LikeReviewAsync(Guid reviewId, string userId)
+    {
+        var parseUserId = Guid.Parse(userId);
+
+        var review = await _placeRepository.GetReviewByIdAsync(reviewId);
+
+        if (review == null)
+        {
+            return Result<string>.Failure("Такого отзыва не существует");
+        }
+
+        if (await _placeRepository.GetReviewLikeAsync(parseUserId, reviewId) != null)
+        {
+            return Result<string>.Failure("Лайк уже поставлен");
+        }
+
+        var newReviewLike = new ReviewLike
+        {
+            UserId = parseUserId,
+            ReviewId = reviewId
+        };
+        await _placeRepository.AddReviewLikeAsync(newReviewLike);
+        await _placeRepository.UpdateLikesAsync(review);
+        return Result<string>.Success("Ok");
+    }
+
+    public async Task<Result<string>> UnlikeReviewAsync(Guid reviewId, string userId)
+    {
+        var parseUserId = Guid.Parse(userId);
+
+        var review = await _placeRepository.GetReviewByIdAsync(reviewId);
+
+        if (review == null)
+        {
+            return Result<string>.Failure("Такого отзыва не существует");
+        }
+
+        var res = await _placeRepository.GetReviewLikeAsync(parseUserId, reviewId);
+
+        if (res == null)
+        {
+            return Result<string>.Failure("Лайк не поставлен");
+        }
+
+        await _placeRepository.DeleteReviewLikeAsync(res);
+        await _placeRepository.UpdateLikesAsync(review);
+        return Result<string>.Success("Ok");
     }
 
     public async Task<Result<Photo>> AddPhotoAsync(Guid placeId, IFormFile file, string userId)

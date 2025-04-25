@@ -47,7 +47,7 @@ public class UserService : IUserService
     {
         var parseUserId = Guid.Parse(userId);
 
-        if (await _userRepository.GetFavoriteByIdAsync(favorite.PlaceId) != null)
+        if (await _userRepository.GetFavoriteByIdAsync(parseUserId, favorite.PlaceId) != null)
         {
             return Result<string>.Failure("Это заведение уже в избранном");
         }
@@ -66,7 +66,7 @@ public class UserService : IUserService
     {
         var parseUserId = Guid.Parse(userId);
 
-        var res = await _userRepository.GetFavoriteByIdAsync(placeId);
+        var res = await _userRepository.GetFavoriteByIdAsync(parseUserId, placeId);
 
         if (res == null)
         {

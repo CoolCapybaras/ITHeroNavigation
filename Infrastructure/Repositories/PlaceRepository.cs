@@ -20,6 +20,12 @@ public class PlaceRepository: IPlaceRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task DeletePlaceAsync(Place place)
+    {
+        _context.Places.Remove(place);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<Place?> GetPlaceByIdAsync(Guid placeId)
     {
         return await _context.Places.FirstOrDefaultAsync(u => u.Id == placeId);
@@ -64,7 +70,35 @@ public class PlaceRepository: IPlaceRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<Review>> GetReviewAsync(Guid placeId, int offset, int count)
+    public async Task<Review?> GetReviewByIdAsync(Guid reviewId)
+    {
+        return await _context.Reviews.FirstOrDefaultAsync(u => u.Id == reviewId);
+    }
+
+    public async Task AddReviewLikeAsync(ReviewLike reviewLike)
+    {
+        await _context.ReviewLikes.AddAsync(reviewLike);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateLikesAsync(Review review)
+    {
+        review.Likes = await _context.ReviewLikes.CountAsync(u => u.ReviewId == review.Id);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<ReviewLike?> GetReviewLikeAsync(Guid userId, Guid reviewId)
+    {
+        return await _context.ReviewLikes.FirstOrDefaultAsync(u => u.UserId == userId && u.ReviewId == reviewId);
+    }
+
+    public async Task DeleteReviewLikeAsync(ReviewLike reviewLike)
+    {
+        _context.ReviewLikes.Remove(reviewLike);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<Review>> GetReviewsAsync(Guid placeId, int offset, int count)
     {
         return await _context.Reviews.Where(u => u.PlaceId == placeId)
             .Skip(offset)

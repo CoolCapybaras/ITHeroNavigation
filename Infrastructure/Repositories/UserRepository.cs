@@ -35,9 +35,9 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<Favorite?> GetFavoriteByIdAsync(Guid placeId)
+    public async Task<Favorite?> GetFavoriteByIdAsync(Guid userId, Guid placeId)
     {
-        return await _context.Favorites.FirstOrDefaultAsync(u => u.PlaceId == placeId);
+        return await _context.Favorites.FirstOrDefaultAsync(u => u.UserId == userId && u.PlaceId == placeId);
     }
 
     public async Task DeleteFavoriteAsync(Favorite favorite)

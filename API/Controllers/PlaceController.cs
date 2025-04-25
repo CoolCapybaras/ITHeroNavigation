@@ -1,6 +1,5 @@
 ﻿using Domain.DTO;
 using Domain.Interfaces;
-using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -47,6 +46,17 @@ public class PlaceController: ControllerBase
        if (result.IsSuccess)
            return Ok(new { result = result.Value });
        return BadRequest(new { error = result.Error });
+    }
+
+    [HttpDelete("{placeId}")]
+    [Authorize]
+    public async Task<IActionResult> DeletePlace(Guid placeId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await _placeService.DeletePlaceAsync(placeId, userId);
+        if (result.IsSuccess)
+            return Ok(new { result = result.Value });
+        return BadRequest(new { error = result.Error });
     }
 
     [HttpPost("{placeId}/reviews")]
