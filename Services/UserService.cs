@@ -1,87 +1,65 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
+﻿using Domain.DTO;
 using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Services;
 
-public class UserService: IUserService
+public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IConfiguration _configuration;
 
-    public UserService(IUserRepository userRepository, IConfiguration configuration)
+    public UserService(IUserRepository placeRepository, IConfiguration configuration)
     {
-        _userRepository = userRepository;
+        _userRepository = placeRepository;
         _configuration = configuration;
     }
-    
-    public async Task<string> RegisterAsync(string email, string password, string username)
+
+    public async Task<Result<List<Place>>> GetPlacesAsync(string userId, int offset, int count)
     {
-        if (await _userRepository.GetByEmailAsync(email) != null)
-            return "User already exists";
+        var parseUserId = Guid.Parse(userId);
+        return Result<List<Place>>.Success(await _userRepository.GetPlacesAsync(parseUserId, offset, count));
+    }
 
-        string hashedPassword = HashPassword(password);
+    public async Task<Result<List<Favorite>>> GetFavoritesAsync(string userId, int offset, int count)
+    {
+        var parseUserId = Guid.Parse(userId);
+        return Result<List<Favorite>>.Success(await _userRepository.GetFavoritesAsync(parseUserId, offset, count));
+    }
 
-        var newUser = new User
+    public async Task<Result<string>> AddFavoriteAsync(FavoriteRequest favorite, string userId)
+    {
+        var parseUserId = Guid.Parse(userId);
+
+        if (await _userRepository.GetFavoriteByIdAsync(favorite.PlaceId) != null)
         {
-            Email = email,
-            HashPassword = hashedPassword,
-            Username = username
-        };
+            return Result<string>.Failure("Это заведение уже в избранном");
+        }
 
-        await _userRepository.AddUserAsync(newUser);
-        return GenerateJwtToken(newUser);
-    }
-
-    public async Task<string> LoginAsync(string email, string password)
-    {
-        var user = await _userRepository.GetByEmailAsync(email);
-        if (user == null || user.HashPassword != HashPassword(password))
-            return null;
-
-        return GenerateJwtToken(user);
-    }
-
-    public async Task<bool> LogoutAsync()
-    {
-        return await Task.FromResult(true);
-    }
-    
-    private string GenerateJwtToken(User user)
-    {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-        var now = DateTime.UtcNow;
-        var claims = new[]
+        var newFavorite = new Favorite
         {
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Iat, EpochTime.GetIntDate(now).ToString(), ClaimValueTypes.Integer64)
+            UserId = parseUserId,
+            PlaceId = favorite.PlaceId,
+            AddedAt = DateTime.UtcNow
         };
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: now.AddHours(1),
-            signingCredentials: credentials
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        await _userRepository.AddFavoriteAsync(newFavorite);
+        return Result<string>.Success("Ok");
     }
-    
-    private string HashPassword(string password)
+
+    public async Task<Result<string>> DeleteFavoriteAsync(Guid placeId, string userId)
     {
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(password);
-        var hash = sha256.ComputeHash(bytes);
-        return Convert.ToBase64String(hash);
+        var parseUserId = Guid.Parse(userId);
+
+        var res = await _userRepository.GetFavoriteByIdAsync(placeId);
+
+        if (res == null)
+        {
+            return Result<string>.Failure("Этого заведения нет в избранном");
+        }
+
+        await _userRepository.DeleteFavoriteAsync(res);
+
+        return Result<string>.Success("Ok");
     }
 }

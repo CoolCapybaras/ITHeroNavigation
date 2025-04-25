@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Domain.Models;
 
@@ -12,6 +13,7 @@ public class Review
     public Guid AuthorId { get; set; }
     
     [ForeignKey("AuthorId")]
+    [JsonIgnore]
     public User Author { get; set; }
     
     [Range(0, 5)]
@@ -22,6 +24,7 @@ public class Review
     public Guid PlaceId { get; set; }
     
     [ForeignKey("PlaceId")]
+    [JsonIgnore]
     public Place Place { get; set; }
     
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;

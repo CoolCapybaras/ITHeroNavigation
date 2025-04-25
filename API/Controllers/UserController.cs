@@ -1,12 +1,13 @@
-﻿using Domain.Interfaces;
+﻿using Domain.DTO;
+using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ITHeroNavigation.Controllers;
 
-[Route("api/auth")]
+[Route("api/users")]
 [ApiController]
 public class UserController : ControllerBase
 {
@@ -16,48 +17,48 @@ public class UserController : ControllerBase
     {
         _userService = userService;
     }
-    
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-    {
-        var token = await _userService.RegisterAsync(request.Email, request.Password, request.Username);
-        if (token == "User already exists")
-            return BadRequest("User already exists");
 
-        return Ok(new { Token = token });
-    }
-
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
-    {
-        var token = await _userService.LoginAsync(request.Email, request.Password);
-        if (token == null)
-            return Unauthorized("Invalid email or password");
-
-        return Ok(new { Token = token });
-    }
-
-    [HttpPost("logout")]
+    [HttpGet("me/places")]
     [Authorize]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> GetPlacesAsync(int offset, int count)
     {
-        var result = await _userService.LogoutAsync();
-        return result ? Ok("Logged out successfully") : BadRequest("Logout failed");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await _userService.GetPlacesAsync(userId, offset, count);
+        if (result.IsSuccess)
+            return Ok(new { result = result.Value });
+        return BadRequest(new { error = result.Error });
     }
 
-    public class RegisterRequest
+    [HttpGet("me/favorites")]
+    [Authorize]
+    public async Task<IActionResult> GetFavoritesAsync(int offset, int count)
     {
-        public string Username { get; set; }
-
-        public string Email { get; set; }
-            
-        public string Password { get; set; }
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await _userService.GetFavoritesAsync(userId, offset, count);
+        if (result.IsSuccess)
+            return Ok(new { result = result.Value });
+        return BadRequest(new { error = result.Error });
     }
 
-    public class LoginRequest
+    [HttpPost("me/favorites")]
+    [Authorize]
+    public async Task<IActionResult> AddFavoriteAsync(FavoriteRequest favorite)
     {
-        public string Email { get; set; }
-        
-        public string Password { get; set; }
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await _userService.AddFavoriteAsync(favorite, userId);
+        if (result.IsSuccess)
+            return Ok(new { result = result.Value });
+        return BadRequest(new { error = result.Error });
+    }
+
+    [HttpDelete("me/favorites/{placeId}")]
+    [Authorize]
+    public async Task<IActionResult> DeleteFavoriteAsync(Guid placeId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await _userService.DeleteFavoriteAsync(placeId, userId);
+        if (result.IsSuccess)
+            return Ok(new { result = result.Value });
+        return BadRequest(new { error = result.Error });
     }
 }

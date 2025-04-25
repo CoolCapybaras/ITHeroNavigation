@@ -1,10 +1,9 @@
-﻿using System.Security.Claims;
-using Domain.DTO;
+﻿using Domain.DTO;
 using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Location = Domain.Models.Location;
+using System.Security.Claims;
 
 namespace ITHeroNavigation.Controllers;
 
@@ -19,80 +18,58 @@ public class PlaceController: ControllerBase
         _placeService = placeService;
     }
     
-    [HttpPost("add_place")]
+    [HttpPost]
     [Authorize]
-    public async Task<IActionResult> AddPlace([FromBody] PlaceRequest place)
+    public async Task<IActionResult> AddPlace([FromBody] PlaceRequest placeRequest)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var result = await _placeService.AddPlaceAsync(place, userId);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await _placeService.AddPlaceAsync(placeRequest, userId);
         if (result.IsSuccess)
             return Ok(new { result = result.Value });
         return BadRequest(new { error = result.Error });
     }
-    
-    [HttpGet("get_places")]
+
+    [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetPlacesByLoc(double latitude, double longitude, double distanceKm)
+    public async Task<IActionResult> GetPlaceById(Guid placeId)
+    {
+        var result = await _placeService.GetPlacesByIdAsync(placeId);
+        if (result.IsSuccess)
+            return Ok(new { result = result.Value });
+        return BadRequest(new { error = result.Error });
+    }
+
+    [HttpGet("nearby")]
+    [Authorize]
+    public async Task<IActionResult> GetPlacesByLocation(double latitude, double longitude, double distanceKm)
     {
        var location = new Location 
        {
            Latitude = latitude,
            Longitude = longitude
        }; 
-       var result =  await _placeService.GetPlacesByLocAsync(location, distanceKm);
+       var result =  await _placeService.GetPlacesByLocationAsync(location, distanceKm);
        if (result.IsSuccess)
            return Ok(new { result = result.Value });
        return BadRequest(new { error = result.Error });
     }
 
-    [HttpPost("add_review")]
+    [HttpPost("{placeId}/reviews")]
     [Authorize]
-    public async Task<IActionResult> AddReviewAsync(ReviewRequest review)
+    public async Task<IActionResult> AddReviewAsync(Guid placeId, ReviewRequest reviewRequest)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var result = await _placeService.AddReviewAsync(review, userId);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await _placeService.AddReviewAsync(placeId, reviewRequest, userId);
         if (result.IsSuccess)
             return Ok(new { result = result.Value });
         return BadRequest(new { error = result.Error });
     }
 
-    [HttpGet("get_review")]
+    [HttpGet("{placeId}/reviews")]
     [Authorize]
-    public async Task<IActionResult> GetReviewByPlaceAsync(Guid placeId, int offset, int count)
+    public async Task<IActionResult> GetReviewsAsync(Guid placeId, int offset, int count)
     {
-        var result = await _placeService.GetReviewByPlaceAsync(placeId, offset, count);
-        if (result.IsSuccess)
-            return Ok(new { result = result.Value });
-        return BadRequest(new { error = result.Error });
-    }
-    
-    [HttpGet("get_favorite_places")]
-    [Authorize]
-    public async Task<IActionResult> GetFavoritePlacesAsync(Guid userId, int offset, int count)
-    {
-        var result = await _placeService.GetFavoritePlacesAsync(userId, offset, count);
-        if (result.IsSuccess)
-            return Ok(new { result = result.Value });
-        return BadRequest(new { error = result.Error });
-    }
-
-    [HttpPost("add_favorite_place")]
-    [Authorize]
-    public async Task<IActionResult> AddFavoritePlaceAsync(FavoriteRequest favorite)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var result = await _placeService.AddFavoritePlaceAsync(favorite, userId);
-        if (result.IsSuccess)
-            return Ok(new { result = result.Value });
-        return BadRequest(new { error = result.Error });
-    }
-
-    [HttpDelete("delete_favorite_place")]
-    [Authorize]
-    public async Task<IActionResult> DeleteFavoriteaAsync(Guid favoriteId)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var result = await _placeService.DeleteFavoriteaAsync(favoriteId, userId);
+        var result = await _placeService.GetReviewsAsync(placeId, offset, count);
         if (result.IsSuccess)
             return Ok(new { result = result.Value });
         return BadRequest(new { error = result.Error });

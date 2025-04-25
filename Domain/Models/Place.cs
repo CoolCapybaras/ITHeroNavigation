@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Models;
@@ -22,18 +23,21 @@ public class Place
     
     [Range(0, 5)]
     public double Rating { get; set; }
-    
-    public List<Review>  Reviews { get; set; }
+
+    [JsonIgnore]
+    public List<Review> Reviews { get; set; }
     
     [Required]
     public Guid AuthorId { get; set; }
     
     [ForeignKey("AuthorId")]
+    [JsonIgnore]
     public User Author { get; set; }
     
     public Guid CategoryId { get; set; }
     
     [ForeignKey("CategoryId")]
+    [JsonIgnore]
     public Category Category { get; set; }
 }
 

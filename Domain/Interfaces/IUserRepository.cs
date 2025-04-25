@@ -4,8 +4,13 @@ namespace Domain.Interfaces;
 
 public interface IUserRepository
 {
-    Task<User?> GetByEmailAsync(string email);
+    public Task<List<Place>> GetPlacesAsync(Guid userId, int offset, int count);
 
-    Task AddUserAsync(User? user);
-    
+    public Task<List<Favorite>> GetFavoritesAsync(Guid userId, int offset, int count);
+
+    public Task AddFavoriteAsync(Favorite favorite);
+
+    public Task<Favorite?> GetFavoriteByIdAsync(Guid placeId);
+
+    public Task DeleteFavoriteAsync(Favorite favorite);
 }
