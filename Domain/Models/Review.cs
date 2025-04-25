@@ -19,5 +19,10 @@ public class Review
     
     public string Text { get; set; }
     
+    public Guid PlaceId { get; set; }
+    
+    [ForeignKey("PlaceId")]
+    public Place Place { get; set; }
+    
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 }

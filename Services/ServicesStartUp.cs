@@ -8,6 +8,7 @@ public static class ServicesStartUp
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IPlaceService, PlaceService>();
 
         return services;
     }

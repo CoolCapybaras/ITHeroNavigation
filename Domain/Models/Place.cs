@@ -33,6 +33,7 @@ public class Place
     
     public Guid CategoryId { get; set; }
     
+    [ForeignKey("CategoryId")]
     public Category Category { get; set; }
 }
 

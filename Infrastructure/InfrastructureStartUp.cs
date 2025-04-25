@@ -15,6 +15,7 @@ public static class InfrastructureStartUp
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
         
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPlaceRepository, PlaceRepository>();
 
         return services;
     }
