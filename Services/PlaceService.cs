@@ -80,16 +80,24 @@ public class PlaceService : IPlaceService
 
     public async Task<Result<Review>> AddReviewAsync(Guid placeId, ReviewRequest review, string userId)
     {
+        var place = await _placeRepository.GetPlaceByIdAsync(placeId);
+
+        if (place == null)
+        {
+            return Result<Review>.Failure("Такого заведения не существует");
+        }
+
         var newReview = new Review
         {
             AuthorId = Guid.Parse(userId),
-            Rating = Math.Clamp(review.Rating, 0, 5),
+            Rating = Math.Clamp(review.Rating, 1, 5),
             Text = review.Text,
             PlaceId = placeId,
             AddedAt = DateTime.UtcNow
         };
 
         await _placeRepository.AddReviewAsync(newReview);
+        await _placeRepository.UpdateRatingAsync(place);
         return Result<Review>.Success(newReview);
     }
 

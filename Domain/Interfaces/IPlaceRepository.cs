@@ -12,6 +12,8 @@ public interface IPlaceRepository
 
     public Task AddReviewAsync(Review review);
 
+    public Task UpdateRatingAsync(Place place);
+
     public Task<List<Review>> GetReviewAsync(Guid placeId, int offset, int count);
 
     public Task AddPhotoAsync(Photo photo);

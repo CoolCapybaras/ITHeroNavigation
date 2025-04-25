@@ -58,6 +58,12 @@ public class PlaceRepository: IPlaceRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task UpdateRatingAsync(Place place)
+    {
+        place.Rating = place.Reviews.Average(r => r.Rating);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<List<Review>> GetReviewAsync(Guid placeId, int offset, int count)
     {
         return await _context.Reviews.Where(u => u.PlaceId == placeId)

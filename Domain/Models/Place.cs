@@ -25,7 +25,7 @@ public class Place
     public double Rating { get; set; }
 
     [JsonIgnore]
-    public List<Review> Reviews { get; set; }
+    public ICollection<Review> Reviews { get; set; }
     
     [Required]
     public Guid AuthorId { get; set; }
