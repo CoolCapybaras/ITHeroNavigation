@@ -11,7 +11,7 @@ public interface IPlaceService
 
     public Task<Result<Place>> GetPlaceByIdAsync(Guid placeId);
 
-    public Task<Result<List<Place>>> GetPlacesByLocationAsync(Location location, double radiusKm);
+    public Task<Result<List<Place>>> GetPlacesAsync(SearchRequest searchRequest);
 
     public Task<Result<Review>> AddReviewAsync(Guid placeId, ReviewRequest review, string userId);
 

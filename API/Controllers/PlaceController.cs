@@ -29,7 +29,7 @@ public class PlaceController: ControllerBase
         return BadRequest(new { error = result.Error });
     }
 
-    [HttpGet]
+    [HttpGet("{placeId}")]
     [Authorize]
     public async Task<IActionResult> GetPlaceById(Guid placeId)
     {
@@ -39,16 +39,11 @@ public class PlaceController: ControllerBase
         return BadRequest(new { error = result.Error });
     }
 
-    [HttpGet("nearby")]
+    [HttpPost("search")]
     [Authorize]
-    public async Task<IActionResult> GetPlacesByLocation(double latitude, double longitude, double distanceKm)
+    public async Task<IActionResult> GetPlaces([FromBody] SearchRequest searchRequest)
     {
-       var location = new Location 
-       {
-           Latitude = latitude,
-           Longitude = longitude
-       }; 
-       var result =  await _placeService.GetPlacesByLocationAsync(location, distanceKm);
+       var result =  await _placeService.GetPlacesAsync(searchRequest);
        if (result.IsSuccess)
            return Ok(new { result = result.Value });
        return BadRequest(new { error = result.Error });

@@ -18,7 +18,6 @@ public static class InfrastructureStartUp
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPlaceRepository, PlaceRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
-        services.AddScoped<IPhotoRepository, PhotoRepository>();
 
         return services;
     }

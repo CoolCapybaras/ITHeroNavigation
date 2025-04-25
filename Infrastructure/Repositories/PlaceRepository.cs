@@ -25,11 +25,31 @@ public class PlaceRepository: IPlaceRepository
         return await _context.Places.FirstOrDefaultAsync(u => u.Id == placeId);
     }
 
-    public async Task<List<Place>> GetPlacesByLocationAsync(double minLat, double maxLat, double minLon, double maxLon)
+    public async Task<List<Place>> GetPlacesAsync(double minLat, double maxLat, double minLon, double maxLon, string name, List<Guid> categoryIds)
     {
-        return await _context.Places.Where(p =>
-            p.Location.Latitude >= minLat && p.Location.Latitude <= maxLat &&
-            p.Location.Longitude >= minLon && p.Location.Longitude <= maxLon).ToListAsync();
+        var query = _context.Places.AsQueryable();
+
+        // Фильтр по локации
+        if (minLat != 0 || maxLat != 0 || minLon != 0 || maxLon != 0)
+        {
+            query = query.Where(p =>
+                p.Location.Latitude >= minLat && p.Location.Latitude <= maxLat &&
+                p.Location.Longitude >= minLon && p.Location.Longitude <= maxLon);
+        }
+
+        // Фильтр по имени
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            query = query.Where(p => EF.Functions.ILike(p.Name, $"{name}%"));
+        }
+
+        // Фильтр по категориям
+        if (categoryIds != null && categoryIds.Count != 0)
+        {
+            query = query.Where(p => categoryIds.Contains(p.CategoryId));
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task AddReviewAsync(Review review)
@@ -44,5 +64,16 @@ public class PlaceRepository: IPlaceRepository
             .Skip(offset)
             .Take(count)
             .ToListAsync();
+    }
+
+    public async Task AddPhotoAsync(Photo photo)
+    {
+        await _context.Photos.AddAsync(photo);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<Photo>> GetPhotosAsync(Guid placeId, int offset, int count)
+    {
+        return await _context.Photos.Where(u => u.PlaceId == placeId).Skip(offset).Take(count).ToListAsync();
     }
 }

@@ -11,13 +11,11 @@ namespace Services;
 public class PlaceService : IPlaceService
 {
     private readonly IPlaceRepository _placeRepository;
-    private readonly IPhotoRepository _photoRepository;
     private readonly IConfiguration _configuration;
 
-    public PlaceService(IPlaceRepository placeRepository, IPhotoRepository photoRepository, IConfiguration configuration)
+    public PlaceService(IPlaceRepository placeRepository, IConfiguration configuration)
     {
         _placeRepository = placeRepository;
-        _photoRepository = photoRepository;
         _configuration = configuration;
     }
 
@@ -53,21 +51,31 @@ public class PlaceService : IPlaceService
         return Result<Place>.Success(place);
     }
 
-    public async Task<Result<List<Place>>> GetPlacesByLocationAsync(Location location, double distanceKm)
+    public async Task<Result<List<Place>>> GetPlacesAsync(SearchRequest searchRequest)
     {
-        const double oneDegreeLatKm = 111.0;
-        double oneDegreeLonKm = 111.320 * Math.Cos(location.Latitude * Math.PI / 180);
+        var location = searchRequest.Location;
 
-        double latOffset = distanceKm / oneDegreeLatKm;
-        double lonOffset = distanceKm / oneDegreeLonKm;
+        double minLat = 0;
+        double maxLat = 0;
+        double minLon = 0;
+        double maxLon = 0;
 
-        double minLat = location.Latitude - latOffset;
-        double maxLat = location.Latitude + latOffset;
-        double minLon = location.Longitude - lonOffset;
-        double maxLon = location.Longitude + lonOffset;
+        if (location.Latitude != 0 || location.Longitude != 0 || searchRequest.DistanceKm != 0)
+        {
+            const double oneDegreeLatKm = 111.0;
+            double oneDegreeLonKm = 111.320 * Math.Cos(location.Latitude * Math.PI / 180);
+
+            double latOffset = searchRequest.DistanceKm / oneDegreeLatKm;
+            double lonOffset = searchRequest.DistanceKm / oneDegreeLonKm;
+
+            minLat = location.Latitude - latOffset;
+            maxLat = location.Latitude + latOffset;
+            minLon = location.Longitude - lonOffset;
+            maxLon = location.Longitude + lonOffset;
+        }
 
         return Result<List<Place>>
-            .Success(await _placeRepository.GetPlacesByLocationAsync(minLat, maxLat, minLon, maxLon));
+            .Success(await _placeRepository.GetPlacesAsync(minLat, maxLat, minLon, maxLon, searchRequest.Name, searchRequest.CategoryIds));
     }
 
     public async Task<Result<Review>> AddReviewAsync(Guid placeId, ReviewRequest review, string userId)
@@ -109,7 +117,7 @@ public class PlaceService : IPlaceService
         if (file == null || file.Length == 0)
             return Result<Photo>.Failure("Файл не выбран");
 
-        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "places", placeId.ToString(), "images");
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "photos");
 
         if (!Directory.Exists(uploadsFolder))
             Directory.CreateDirectory(uploadsFolder);
@@ -129,12 +137,12 @@ public class PlaceService : IPlaceService
             PlaceId = placeId
         };
 
-        await _photoRepository.AddPhotoAsync(newPhoto);
+        await _placeRepository.AddPhotoAsync(newPhoto);
         return Result<Photo>.Success(newPhoto);
     }
 
     public async Task<Result<List<Photo>>> GetPhotosAsync(Guid placeId, int offset, int count)
     {
-        return Result<List<Photo>>.Success(await _photoRepository.GetPhotosAsync(placeId, offset, count));
+        return Result<List<Photo>>.Success(await _placeRepository.GetPhotosAsync(placeId, offset, count));
     }
 }
