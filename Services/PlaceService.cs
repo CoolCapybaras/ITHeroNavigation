@@ -2,6 +2,8 @@
 using Domain.Errors;
 using Domain.Interfaces;
 using Domain.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 namespace Services;
@@ -9,11 +11,13 @@ namespace Services;
 public class PlaceService : IPlaceService
 {
     private readonly IPlaceRepository _placeRepository;
+    private readonly IPhotoRepository _photoRepository;
     private readonly IConfiguration _configuration;
 
-    public PlaceService(IPlaceRepository placeRepository, IConfiguration configuration)
+    public PlaceService(IPlaceRepository placeRepository, IPhotoRepository photoRepository, IConfiguration configuration)
     {
         _placeRepository = placeRepository;
+        _photoRepository = photoRepository;
         _configuration = configuration;
     }
 
@@ -84,5 +88,53 @@ public class PlaceService : IPlaceService
     public async Task<Result<List<Review>>> GetReviewsAsync(Guid placeId, int offset, int count)
     {
         return Result<List<Review>>.Success(await _placeRepository.GetReviewAsync(placeId, offset, count));
+    }
+
+    public async Task<Result<Photo>> AddPhotoAsync(Guid placeId, IFormFile file, string userId)
+    {
+        var parseUserId = Guid.Parse(userId);
+
+        var place = await _placeRepository.GetPlaceByIdAsync(placeId);
+
+        if (place == null)
+        {
+            return Result<Photo>.Failure("Такого заведения не существует");
+        }
+
+        if (place.AuthorId != parseUserId)
+        {
+            return Result<Photo>.Failure("Вы не создатель этого заведения");
+        }
+
+        if (file == null || file.Length == 0)
+            return Result<Photo>.Failure("Файл не выбран");
+
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "places", placeId.ToString(), "images");
+
+        if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+
+        var uuid = Guid.NewGuid();
+        var uniqueFileName = uuid.ToString() + Path.GetExtension(file.FileName);
+        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var newPhoto = new Photo
+        {
+            Id = uuid,
+            PlaceId = placeId
+        };
+
+        await _photoRepository.AddPhotoAsync(newPhoto);
+        return Result<Photo>.Success(newPhoto);
+    }
+
+    public async Task<Result<List<Photo>>> GetPhotosAsync(Guid placeId, int offset, int count)
+    {
+        return Result<List<Photo>>.Success(await _photoRepository.GetPhotosAsync(placeId, offset, count));
     }
 }

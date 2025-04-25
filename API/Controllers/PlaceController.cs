@@ -74,4 +74,25 @@ public class PlaceController: ControllerBase
             return Ok(new { result = result.Value });
         return BadRequest(new { error = result.Error });
     }
+
+    [HttpPost("{placeId}/photos")]
+    [RequestSizeLimit(10_000_000)] // Ограничение размера, например 10MB
+    public async Task<IActionResult> UploadPhotoAsync(Guid placeId, IFormFile file)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await _placeService.AddPhotoAsync(placeId, file, userId);
+        if (result.IsSuccess)
+            return Ok(new { result = result.Value });
+        return BadRequest(new { error = result.Error });
+    }
+
+    [HttpGet("{placeId}/photos")]
+    [Authorize]
+    public async Task<IActionResult> GetPhotosAsync(Guid placeId, int offset, int count)
+    {
+        var result = await _placeService.GetPhotosAsync(placeId, offset, count);
+        if (result.IsSuccess)
+            return Ok(new { result = result.Value });
+        return BadRequest(new { error = result.Error });
+    }
 }
