@@ -18,4 +18,6 @@ public class User
     [Required]
     public string HashPassword { get; set; }
 
+    public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
+
 }
